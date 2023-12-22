@@ -1,0 +1,48 @@
+% Paramètres du système
+bits = randi([0 1], 1, 1000);  % Génération de bits aléatoires
+snr_dB = 10;  % Rapport signal sur bruit en dB
+
+% Modulation BPSK
+modulated_signal = pskmod(bits, 2);
+
+% Ajout de bruit AWGN
+noisy_signal = awgn(modulated_signal, snr_dB, 'measured');
+
+% Démodulation BPSK
+demodulated_bits = pskdemod(noisy_signal, 2);
+
+% Calcul du taux d'erreur binaire (BER)
+error_bits = sum(bits ~= demodulated_bits);
+ber = error_bits / length(bits);
+
+% Affichage des résultats
+disp(['Bits d''origine : ', num2str(bits)]);
+disp(['Bits démodulés : ', num2str(demodulated_bits)]);
+disp(['Taux d''erreur binaire (BER) : ', num2str(ber)]);
+
+% Tracé du signal modulé et du signal dégradé par le bruit
+figure;
+subplot(2,1,1);
+plot(modulated_signal, 'o-');
+title('Signal modulé BPSK');
+
+subplot(2,1,2);
+plot(noisy_signal, 'o-');
+title('Signal dégradé par le bruit AWGN');
+
+% Affichage des courbes BER pour différentes valeurs de SNR
+snr_values = -10:2:20;
+ber_values = zeros(size(snr_values));
+
+for i = 1:length(snr_values)
+    noisy_signal = awgn(modulated_signal, snr_values(i), 'measured');
+    demodulated_bits = pskdemod(noisy_signal, 2);
+    error_bits = sum(bits ~= demodulated_bits);
+    ber_values(i) = error_bits / length(bits);
+end
+
+figure;
+semilogy(snr_values, ber_values, 'o-');
+title('Performance du système en fonction du SNR');
+xlabel('SNR (dB)');
+ylabel('Taux d''erreur binaire (BER)');
